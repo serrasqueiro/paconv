@@ -5,22 +5,34 @@
 # pylint: disable=missing-function-docstring
 
 import sys
+import os
 
-INPUT = "capa.xml"
+INPUT = "capa.xml"  # default XML file to tidy
 
 
 def main():
-    tidy_xml(sys.argv[1:])
-
+    success = tidy_xml(sys.argv[1:])
+    if success is None:
+        print(f"""Usage:
+{__file__} [xml-file1 ...]
+""")
 
 def tidy_xml(args):
-    for fname in args:
+    if args:
+        param = args
+        if param[0].startswith(("-h", "--help")):
+            return None
+    else:
+        param = [INPUT]
+    for fname in param:
         if not fname.endswith(".xml"):
             print("Skipping:", fname)
         did = tidy_rewrite(fname)
         if did:
             print("Rewritten:", fname)
-
+        else:
+            print("Nothing changed:", fname)
+    return True
 
 def tidy_rewrite(fname:str):
     with open(fname, "r", encoding="utf-8") as fdin:
@@ -43,8 +55,13 @@ def tidy_rewrite(fname:str):
     fdin.close()
     res = [line[min_blk:] for line in lines]
     #print(''.join(res), end='')
+    data = ''.join(res)
     with open(fname, "w", encoding="utf-8") as fdout:
-        fdout.write(''.join(res))
+        fdout.write(data)
+    if os.name == "nt":
+        fdout.close()
+        with open(fname, "wb") as fdout:
+            fdout.write(data.encode("utf-8"))
     return True
 
 
