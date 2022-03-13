@@ -4,7 +4,7 @@ import json
 
 # pylint: disable=missing-function-docstring
 
-NORM_PAD = " " * 2
+NORM_PAD = " " * 4
 
 
 def main():
