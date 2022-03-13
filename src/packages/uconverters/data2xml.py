@@ -1,3 +1,5 @@
+""" uconverters.data2xml - universal converters, like json2xml()
+"""
 import json
 
 
@@ -8,7 +10,7 @@ def main():
     an_encode = "ISO-8859-1"
     inp = open("a.json", "r", encoding=an_encode).read()
     json_obj = json.loads(inp)
-    astr = json2xml(json_obj)
+    astr = j2xml(json_obj)
     print(astr)
 
 
@@ -35,4 +37,5 @@ def json2xml(json_obj, pad=""):
     return "%s%s" % (pad, json_obj)
 
 
-main()
+if __name__ == "__main__":
+    main()
