@@ -2,6 +2,7 @@
 """
 import json
 
+# pylint: disable=missing-function-docstring
 
 NORM_PAD = " " * 2
 
@@ -10,7 +11,7 @@ def main():
     an_encode = "ISO-8859-1"
     inp = open("a.json", "r", encoding=an_encode).read()
     json_obj = json.loads(inp)
-    astr = j2xml(json_obj)
+    astr = json2xml(json_obj)
     print(astr)
 
 
