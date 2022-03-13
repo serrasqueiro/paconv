@@ -2,7 +2,7 @@
 """
 # (c)2022  Henrique Moreira
 
-# pylint: disable=missing-function-docstring
+# pylint: disable=missing-function-docstring, line-too-long
 
 import os.path
 import json
@@ -34,7 +34,7 @@ def to_json(in_file:str, out_file:str) -> int:
         return -1
     with open(out_file, "w", encoding="utf-8") as fdout:
         bytes_written = fdout.write(new)
-    return bytes_written > 0
+    return bytes_written
 
 
 if __name__ == "__main__":
