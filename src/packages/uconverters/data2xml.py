@@ -33,14 +33,17 @@ def json2xml(json_obj, pad="", level=0):
         return "\n".join(res)
     return f"{pad}{json_obj}"
 
-def from_node(tag_name, sub_obj, pad, level, parent):
+def from_node(tag_name, json_obj, pad, level, parent):
     """ Get string list from node """
     assert level < 100, "Too deep!"
     assert parent
     res = []
-    if sub_obj is None:
+    if json_obj is None:
         res = [f"{pad}<{tag_name}/>"]
         return res
+    sub_obj = namespace_leaf(tag_name, json_obj)
+    if not sub_obj:
+        sub_obj = json_obj
     akind, alist = listed_resolve(tag_name, sub_obj, pad)
     if akind and alist:
         hprint("### akind:", akind, alist, end="<<<\n")
@@ -87,13 +90,26 @@ def to_prop_namespace(tag_name:str, alist, pad) -> list:
     res = []
     for left, right in alist:
         assert len(right) == 2, f"to_prop_namespace({tag_name}): {right}"
-        atext = right["#text"]
+        #atext = right["#text"] == left
+        assert "#text" in right, f"Bad dict: {right}"
         names = [key for key in right if key.startswith("@")]
         ns_eq = names[0][1:]
         assert ":" in ns_eq, f"Invalid: {ns_eq}"
         astr = f"<{tag_name} {ns_eq}='{VAR_DOMAIN}'>{left}</{tag_name}>"
         res.append(f"{pad}{astr}")
     return res
+
+def namespace_leaf(tag_name, sub_obj):
+    assert tag_name
+    if not isinstance(sub_obj, dict):
+        return []
+    if len(sub_obj) != 2 or "#text" not in sub_obj:
+        return []
+    keying = [item for item in sub_obj if item.startswith("@xmlns:")]
+    if not keying:
+        return []
+    new_obj = [sub_obj]
+    return new_obj
 
 def dict_sort(json_obj):
     if not STRCASE_SORT:
