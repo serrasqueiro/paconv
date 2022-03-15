@@ -1,4 +1,6 @@
 """ uconverters.data2xml - universal converters, like json2xml()
+
+See also: https://www.json.org/json-en.html
 """
 import json
 
@@ -18,18 +20,40 @@ def main():
     astr = json2xml(json_obj)
     print(astr)
 
+def xml_text_from_json(json_obj):
+    """ Main function: converts json data-string (with namespace in) into XML
+    """
+    assert isinstance(json_obj, dict)
+    astr = ""
+    for tag_name in sorted(json_obj):
+        adict = json_obj[tag_name]
+        namesp = adict["@xmlns"]
+        del adict["@xmlns"]
+        astr += f"<{tag_name} xmlns='{namesp}'>\n"
+        content = json2xml(adict, NORM_PAD, level=1) + "\n"
+        astr += content
+        astr += f"</{tag_name}\n"
+    return astr
 
-def json2xml(json_obj, pad="", level=0):
+def json2xml(json_obj, pad="", level=0, pad_parent:str="", parent:str=""):
     res = []
     json_obj_type = type(json_obj)
     if json_obj_type is list:
         for sub_elem in json_obj:
+            if parent:
+                res.append(f"{pad_parent}<{parent}>")
             res.append(json2xml(sub_elem, pad, level + 1))
+            if parent:
+                res.append(f"{pad_parent}</{parent}>")
         return "\n".join(res)
     if json_obj_type is dict:
+        if parent:
+            res.append(f"{pad_parent}<{parent}>")
         for tag_name in dict_sort(json_obj):
             sub_obj = json_obj[tag_name]
             res.extend(from_node(tag_name, sub_obj, pad, level, json_obj))
+        if parent:
+            res.append(f"{pad_parent}</{parent}>")
         return "\n".join(res)
     return f"{pad}{json_obj}"
 
@@ -53,17 +77,14 @@ def from_node(tag_name, json_obj, pad, level, parent):
         assert akind == "NS", f"Uops, akind={akind}!"
         res = to_prop_namespace(tag_name, alist, pad)
         return res
-    sub_str = json2xml(sub_obj, NORM_PAD + pad, level + 1)
+    sub_str = json2xml(sub_obj, NORM_PAD + pad, level + 1, pad, tag_name)
     assert isinstance(sub_str, str)
     n_lines = sub_str.count("\n")
     if n_lines <= 0:
         left = sub_str.strip()
         res.append(f"{pad}<{tag_name}>{left}</{tag_name}>")
-    else:
-        res.append(f"{pad}<{tag_name}>")
-        res.append(sub_str)
-        new = f"{pad}</{tag_name}>"
-        res.append(new)
+        return res
+    res.append(sub_str)
     return res
 
 def listed_resolve(tag_name, sub_obj, pad):
